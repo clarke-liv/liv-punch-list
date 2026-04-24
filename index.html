@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>LIV Punch List</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; background: #f0ede8; }
+body { display: flex; align-items: center; justify-content: center; }
+.frame { width: 100%; max-width: 430px; min-height: 100vh; background: #fff; display: flex; flex-direction: column; box-shadow: 0 20px 60px rgba(0,0,0,0.15); }
+.screen { min-height: 100vh; }
+@media (max-width: 430px) { .frame { box-shadow: none; } }
+:root {
+  --g: #1a5c35; --gm: #2a8a50; --gl: #e6f2eb;
+  --t: #1a1a18; --t2: #666660; --t3: #a8a8a0;
+  --bd: rgba(0,0,0,0.09); --bg2: #f7f7f4;
+  --red: #c0392b; --redl: #fdf0ee;
+}
+.screen { display: none; flex-direction: column; height: 100%; }
+.screen.active { display: flex; }
+.hdr { height: 64px; flex-shrink: 0; padding: 0 16px; display: flex; align-items: center; gap: 12px; border-bottom: 0.5px solid var(--bd); background: #fff; }
+.logo { width: 36px; height: 36px; border-radius: 10px; background: var(--g); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.logo svg { width: 18px; height: 18px; }
+.ht { flex: 1; min-width: 0; }
+.ht-title { font-size: 15px; font-weight: 600; color: var(--t); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ht-sub { font-size: 11px; color: var(--t3); margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hbtn { padding: 7px 13px; font-size: 13px; font-weight: 500; border-radius: 20px; border: 0.5px solid var(--bd); background: none; cursor: pointer; color: var(--t2); font-family: inherit; flex-shrink: 0; white-space: nowrap; }
+.hbtn:active { background: var(--bg2); }
+.body { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 16px; }
+.footer { flex-shrink: 0; padding: 12px 16px 20px; border-top: 0.5px solid var(--bd); background: #fff; display: flex; gap: 8px; }
+.bo { flex: 1; padding: 12px; border-radius: 12px; font-size: 13px; font-weight: 600; border: 0.5px solid var(--bd); background: none; color: var(--t); font-family: inherit; cursor: pointer; }
+.bo:active { background: var(--bg2); }
+.bs { flex: 1; padding: 12px; border-radius: 12px; font-size: 13px; font-weight: 600; background: var(--g); color: #fff; border: none; font-family: inherit; cursor: pointer; }
+.bs:active { opacity: 0.85; }
+.bf { width: 100%; padding: 13px; border-radius: 12px; font-size: 14px; font-weight: 600; background: var(--g); color: #fff; border: none; font-family: inherit; cursor: pointer; margin-top: 6px; }
+.bf:active { opacity: 0.85; }
+.bf:disabled { opacity: 0.35; cursor: default; }
+.slbl { font-size: 10px; font-weight: 600; color: var(--t3); text-transform: uppercase; letter-spacing: 0.09em; margin-bottom: 8px; }
+.sw { position: relative; margin-bottom: 16px; }
+.sw input { width: 100%; padding: 10px 12px 10px 36px; font-size: 14px; font-family: inherit; border: 0.5px solid var(--bd); border-radius: 12px; background: var(--bg2); color: var(--t); outline: none; }
+.sw input:focus { border-color: var(--gm); }
+.si { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: var(--t3); pointer-events: none; }
+.jc { display: flex; align-items: center; gap: 12px; padding: 13px 14px; border: 0.5px solid var(--bd); border-radius: 14px; margin-bottom: 8px; cursor: pointer; background: #fff; }
+.jc:active { background: var(--bg2); }
+.ji { width: 38px; height: 38px; border-radius: 9px; background: var(--gl); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.jn { font-size: 14px; font-weight: 500; color: var(--t); }
+.jm { font-size: 11px; color: var(--t3); margin-top: 2px; }
+.pd { display: inline-block; width: 5px; height: 5px; border-radius: 50%; background: var(--gm); margin-right: 5px; vertical-align: middle; margin-bottom: 1px; }
+.ja { margin-left: auto; color: var(--t3); font-size: 16px; flex-shrink: 0; }
+.stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+.stat { background: var(--bg2); border-radius: 12px; padding: 12px 14px; }
+.sv { font-size: 28px; font-weight: 600; color: var(--t); font-family: 'DM Mono', monospace; }
+.sv.g { color: var(--gm); }
+.sl { font-size: 11px; color: var(--t3); margin-top: 2px; }
+.tabs { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; margin-bottom: 14px; scrollbar-width: none; }
+.tabs::-webkit-scrollbar { display: none; }
+.tab { padding: 6px 13px; border-radius: 20px; font-size: 12px; font-weight: 500; border: 0.5px solid var(--bd); white-space: nowrap; background: #fff; color: var(--t2); font-family: inherit; cursor: pointer; flex-shrink: 0; }
+.tab.active { background: var(--g); color: #fff; border-color: var(--g); }
+.pi { display: flex; align-items: flex-start; gap: 10px; padding: 12px 14px; border: 0.5px solid var(--bd); border-radius: 14px; margin-bottom: 8px; background: #fff; }
+.pi.done { opacity: 0.4; }
+.th { width: 54px; height: 54px; border-radius: 9px; background: var(--bg2); flex-shrink: 0; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 22px; border: 0.5px solid var(--bd); overflow: hidden; }
+.th img { width: 100%; height: 100%; object-fit: cover; }
+.pb { flex: 1; min-width: 0; }
+.pr { font-size: 10px; font-weight: 600; color: var(--gm); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 2px; }
+.pn { font-size: 13px; color: var(--t); line-height: 1.4; }
+.ps { font-size: 11px; color: var(--t3); margin-top: 4px; }
+.ps.f { color: var(--red); font-weight: 500; }
+.ck { width: 26px; height: 26px; border-radius: 50%; border: 1.5px solid var(--bd); background: none; cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; margin-top: 2px; }
+.ck.done { background: var(--g); border-color: var(--g); }
+/* Section picker cards */
+.sec-card { display: flex; align-items: center; gap: 16px; padding: 22px 18px; border: 0.5px solid var(--bd); border-radius: 16px; margin-bottom: 14px; cursor: pointer; background: #fff; transition: all 0.15s; }
+.sec-card:active { background: var(--gl); border-color: var(--gm); }
+.sec-icon { font-size: 36px; flex-shrink: 0; }
+.sec-text { flex: 1; }
+.sec-name { font-size: 18px; font-weight: 600; color: var(--t); }
+.sec-desc { font-size: 12px; color: var(--t3); margin-top: 3px; }
+.sec-arr { font-size: 20px; color: var(--t3); }
+/* Capture */
+.cz { background: var(--bg2); border-radius: 16px; height: 190px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; margin-bottom: 14px; border: 1.5px dashed var(--bd); cursor: pointer; position: relative; overflow: hidden; }
+.cz.has { border-style: solid; border-color: var(--gm); }
+.cz video, .cz canvas { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border-radius: 14px; }
+.co { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; gap: 8px; pointer-events: none; }
+.ci { font-size: 38px; }
+.cl { font-size: 13px; color: var(--t2); font-weight: 500; }
+.sh { position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); z-index: 3; width: 52px; height: 52px; border-radius: 50%; background: #fff; border: 3px solid rgba(255,255,255,0.5); cursor: pointer; display: none; box-shadow: 0 2px 12px rgba(0,0,0,0.3); }
+.sh:active { transform: translateX(-50%) scale(0.93); }
+.area-badge { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; padding: 10px 13px; background: var(--gl); border-radius: 12px; border: 0.5px solid rgba(26,92,53,0.15); }
+.area-badge-name { font-size: 13px; font-weight: 600; color: var(--g); flex: 1; }
+.area-change { font-size: 12px; color: var(--gm); background: none; border: none; cursor: pointer; font-family: inherit; font-weight: 500; }
+.vr { display: flex; align-items: center; gap: 12px; border: 0.5px solid var(--bd); border-radius: 12px; padding: 11px 13px; background: var(--bg2); margin-bottom: 14px; }
+.mc { width: 38px; height: 38px; border-radius: 50%; background: var(--gl); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.mc.rec { background: var(--redl); animation: pulse 1s infinite; }
+@keyframes pulse { 0%,100%{transform:scale(1)}50%{transform:scale(1.07)} }
+.vt { font-size: 13px; color: var(--t2); flex: 1; line-height: 1.4; }
+.vt.on { color: var(--t); font-style: italic; }
+.sb { background: var(--gl); border-radius: 12px; padding: 11px 13px; margin-bottom: 14px; font-size: 13px; color: var(--g); line-height: 1.45; border: 0.5px solid rgba(26,92,53,0.15); }
+.loading { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; height: 200px; }
+.sp { width: 28px; height: 28px; border: 2.5px solid var(--bd); border-top-color: var(--g); border-radius: 50%; animation: spin 0.7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.lt { font-size: 13px; color: var(--t3); }
+.mbg { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 200; }
+.mo { background: #fff; border-radius: 18px; padding: 24px; width: 90%; max-width: 360px; text-align: center; }
+.mo img { width: 100%; height: 200px; object-fit: cover; border-radius: 10px; margin-bottom: 12px; }
+.mo-em { font-size: 60px; margin-bottom: 12px; }
+.mo-rm { font-size: 10px; font-weight: 600; color: var(--gm); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 5px; }
+.mo-nt { font-size: 14px; color: var(--t2); line-height: 1.5; margin-bottom: 14px; }
+.mf { padding: 8px 16px; background: var(--redl); color: var(--red); border: none; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; font-family: inherit; margin-right: 8px; }
+.mx { padding: 8px 16px; background: var(--bg2); border: none; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; font-family: inherit; }
+.toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%); background: var(--t); color: #fff; padding: 9px 18px; border-radius: 20px; font-size: 13px; font-weight: 500; opacity: 0; transition: opacity 0.25s; pointer-events: none; white-space: nowrap; z-index: 300; }
+.toast.show { opacity: 1; }
+.auth-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px; text-align: center; gap: 16px; }
+.al { width: 64px; height: 64px; border-radius: 18px; background: var(--g); display: flex; align-items: center; justify-content: center; }
+.al svg { width: 32px; height: 32px; }
+.at { font-size: 22px; font-weight: 600; color: var(--t); }
+.as { font-size: 14px; color: var(--t2); line-height: 1.5; }
+.gbtn { display: flex; align-items: center; gap: 10px; padding: 13px 24px; background: #fff; border: 0.5px solid var(--bd); border-radius: 12px; font-size: 14px; font-weight: 500; cursor: pointer; font-family: inherit; color: var(--t); box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+.gbtn:active { background: var(--bg2); }
+.empty { text-align: center; padding: 32px 0; color: var(--t3); font-size: 14px; }
+.custom-row { display: flex; gap: 8px; margin-top: 4px; }
+.custom-row input { flex: 1; padding: 10px 12px; font-size: 14px; font-family: inherit; border: 0.5px solid var(--bd); border-radius: 12px; background: var(--bg2); color: var(--t); outline: none; }
+.custom-row input:focus { border-color: var(--gm); }
+.custom-row button { padding: 10px 16px; background: var(--g); color: #fff; border: none; border-radius: 12px; font-size: 14px; font-weight: 600; font-family: inherit; cursor: pointer; }
+</style>
+</head>
+<body>
+<div class="frame" id="app">
+
+<!-- AUTH -->
+<div class="screen active" id="s-auth">
+  <div class="auth-wrap">
+    <div class="al"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+    <div class="at">LIV Punch List</div>
+    <div class="as">Sign in to access your LIV Painting job folders on Google Drive.</div>
+    <button class="gbtn" onclick="signIn()">
+      <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+      Sign in with Google
+    </button>
+    <div style="font-size:12px;color:var(--t3)">Your data stays in your Google Drive</div>
+  </div>
+</div>
+
+<!-- HOME -->
+<div class="screen" id="s-home">
+  <div class="hdr">
+    <div class="logo"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+    <div class="ht"><div class="ht-title">LIV Punch List</div><div class="ht-sub" id="home-sub">Loading…</div></div>
+    <button class="hbtn" onclick="signOut()">Sign out</button>
+  </div>
+  <div class="body">
+    <div class="sw">
+      <span class="si"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></span>
+      <input type="text" placeholder="Search jobs…" oninput="filterJobs(this.value)" />
+    </div>
+    <div id="job-list"><div class="loading"><div class="sp"></div><div class="lt">Loading jobs from Drive…</div></div></div>
+  </div>
+</div>
+
+<!-- JOB VIEW -->
+<div class="screen" id="s-job">
+  <div class="hdr">
+    <div class="logo"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+    <div class="ht"><div class="ht-title" id="job-title">Job</div><div class="ht-sub" id="job-sub">Punch list</div></div>
+    <button class="hbtn" onclick="go('s-home')">← Jobs</button>
+  </div>
+  <div class="body">
+    <div class="stats">
+      <div class="stat"><div class="sv" id="cnt-total">0</div><div class="sl">Total items</div></div>
+      <div class="stat"><div class="sv g" id="cnt-done">0</div><div class="sl">Complete</div></div>
+    </div>
+    <div class="tabs" id="room-tabs"></div>
+    <div id="punch-list"></div>
+    <button class="bf" onclick="go('s-section')">+ Add punch items</button>
+    <div style="height:80px"></div>
+  </div>
+  <div class="footer">
+    <button class="bo" onclick="copyLink()">📋 Copy link</button>
+    <button class="bs" onclick="go('s-sub')">Send to sub →</button>
+  </div>
+</div>
+
+<!-- SECTION PICKER -->
+<div class="screen" id="s-section">
+  <div class="hdr">
+    <div class="logo" style="background:var(--gm)"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+    <div class="ht"><div class="ht-title" id="section-job-name">Job</div><div class="ht-sub">Where is the punch item?</div></div>
+    <button class="hbtn" onclick="go('s-job')">← Back</button>
+  </div>
+  <div class="body" style="display:flex;flex-direction:column;padding-top:24px">
+    <div class="sec-card" onclick="pickSection('interior')">
+      <div class="sec-icon">🏠</div>
+      <div class="sec-text"><div class="sec-name">Interior</div><div class="sec-desc">Rooms inside the home</div></div>
+      <div class="sec-arr">›</div>
+    </div>
+    <div class="sec-card" onclick="pickSection('exterior')">
+      <div class="sec-icon">🏡</div>
+      <div class="sec-text"><div class="sec-name">Exterior</div><div class="sec-desc">Outside walls, trim, doors, siding</div></div>
+      <div class="sec-arr">›</div>
+    </div>
+    <div class="sec-card" onclick="pickSection('both')">
+      <div class="sec-icon">📋</div>
+      <div class="sec-text"><div class="sec-name">Both</div><div class="sec-desc">Show all interior and exterior areas</div></div>
+      <div class="sec-arr">›</div>
+    </div>
+  </div>
+</div>
+
+<!-- AREA PICKER -->
+<div class="screen" id="s-area">
+  <div class="hdr">
+    <div class="logo" style="background:var(--gm)"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+    <div class="ht"><div class="ht-title" id="area-title">Interior</div><div class="ht-sub" id="area-job-name">Job</div></div>
+    <button class="hbtn" onclick="go('s-section')">← Back</button>
+  </div>
+  <div class="body" style="display:flex;flex-direction:column;padding-top:24px">
+    <div id="area-list"></div>
+    <div id="interior-input-wrap" style="display:none">
+      <div class="slbl" style="margin-bottom:10px">Type the room name</div>
+      <div class="custom-row">
+        <input type="text" id="custom-area-input" placeholder="e.g. Master Bath, Kitchen…" autofocus>
+        <button onclick="selectCustomArea()">Go →</button>
+      </div>
+      <div style="margin-top:24px">
+        <div class="slbl" style="margin-bottom:10px">Or pick a common room</div>
+        <div id="quick-rooms"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CAPTURE -->
+<div class="screen" id="s-capture">
+  <div class="hdr">
+    <div class="logo" style="background:var(--gm)"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M20 7h-2.5l-1.5-2h-8L6.5 7H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z"/></svg></div>
+    <div class="ht"><div class="ht-title">Capture punch item</div><div class="ht-sub" id="cap-sub">Job · Area</div></div>
+    <button class="hbtn" onclick="cancelCapture()">Cancel</button>
+  </div>
+  <div class="body">
+    <div class="area-badge">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2a8a50" stroke-width="2" stroke-linecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+      <span class="area-badge-name" id="area-badge-name">Area</span>
+      <button class="area-change" onclick="go('s-section')">Change</button>
+    </div>
+    <div class="cz" id="cap-zone" onclick="handleCaptureClick()">
+      <video id="cam-vid" autoplay playsinline muted style="display:none"></video>
+      <canvas id="cam-canvas" style="display:none"></canvas>
+      <div class="co" id="cap-overlay"><div class="ci">📷</div><div class="cl">Tap to open camera</div></div>
+      <button class="sh" id="shutter" onclick="snapPhoto(event)"></button>
+    </div>
+    <div class="vr">
+      <button class="mc" id="mic-btn" onclick="toggleMic()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1a5c35" stroke-width="2" stroke-linecap="round"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+      </button>
+      <div class="vt" id="voice-txt">Tap mic to record voice note</div>
+    </div>
+    <button class="bf" id="save-btn" onclick="saveItem()" disabled>Save to Google Drive</button>
+    <div id="save-status" style="font-size:12px;color:var(--t3);text-align:center;margin-top:8px;min-height:18px"></div>
+  </div>
+</div>
+
+<!-- SUB VIEW -->
+<div class="screen" id="s-sub">
+  <div class="hdr" style="background:#f0f7f3">
+    <div class="logo" style="background:var(--gm)"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg></div>
+    <div class="ht"><div class="ht-title" id="sub-title">Job</div><div class="ht-sub">Subcontractor view</div></div>
+    <button class="hbtn" onclick="go('s-job')">← Back</button>
+  </div>
+  <div class="body">
+    <div class="sb">Tap the circle next to each item to mark it complete. Clarke will review and may flag items for a redo.</div>
+    <div id="sub-list"></div>
+  </div>
+</div>
+
+</div><!-- /frame -->
+<div class="toast" id="toast"></div>
+
+<script>
+var PROJECTS_FOLDER_ID = '1ldgwo0hJIvf_X98Heoj70CNtOK9MjePS';
+var PUNCH_FOLDER_NAME  = 'Punch List';
+var INTERIOR_AREAS = ['Master Bath','Guest Bath','Kitchen','Living Room','Family Room','Dining Room','Hallway','Bedroom — Primary','Bedroom — Guest','Office','Laundry Room','Basement','Stairwell'];
+var EXTERIOR_AREAS = ['Exterior — Front','Exterior — Back','Exterior — Left Side','Exterior — Right Side','Garage Door','Fence','Deck / Porch','Trim & Fascia'];
+var DEMO_JOBS = [
+  {id:'1NeHCzE4ohvlTA_SBa06v2N--DS4oJW30', name:'72 – Jenee – Henry – 30076',      recent:true},
+  {id:'1driF4SqKmByqkjtXqjxv6oZD9ow6IpTA', name:'71 – William – Sheesley – 30350', recent:true},
+  {id:'1htv30dVQxW0sEcP859zu9cRLxMlHDLyU', name:'49 – Chrissie – Merrill – 30328', recent:false},
+  {id:'1t0AjnaJkcCe5zCT77omf1g5LqnDHO4Aw', name:'22 – Kayln – Pounders – 30339',  recent:false},
+  {id:'1KF2g_M2nB4WfnOud0ZphbElYdBDacCTD', name:'40 – Kalyn – Pounders – 30318',  recent:false},
+  {id:'1hvxI-00PRIsRfxBCqq4dfsT9f091iWk0', name:'39 – Lisa – Clark – 30339',      recent:false},
+  {id:'10iIdlFBC5YbBq4ANfb8WMrF7oHXqH2Al', name:'44 – Cassias – Coleman – 30318', recent:false},
+  {id:'1OfqyDdl6GfG9nAzG6RQRPGV47zOk4oX3', name:'59 – Test – Johnson – 30338',   recent:false},
+  {id:'1A3Luc0GORdZ7MqDJvIquF7y9SKxBK2ON', name:'50 – Burke – Buster – 30305',    recent:false},
+  {id:'1FDj8q55W7ihozvGV7JifXEy-_RbK1RqM', name:'46 – Ronnie – Hutchins – 30082', recent:false},
+  {id:'1-luGOEa3L7w38vKAnfALMx6yDigYyAmL', name:'21 – Laura – Nunnelly – 30062',  recent:false},
+  {id:'1VLGvFHyefc0zrLgukmpnbo5cS_w_iJaf', name:'27 – Sahill – Wadhwa – 30075',   recent:false},
+];
+
+var accessToken  = null;
+var jobs         = [];
+var currentJob   = null;
+var items        = [];
+var currentRoom  = 'All';
+var currentSection = 'interior';
+var selectedArea = '';
+var photoBlob    = null;
+var voiceText    = '';
+var camStream    = null;
+var recognition  = null;
+var isRecording  = false;
+var cameraOpen   = false;
+
+// ── AUTH ──────────────────────────────────────────────────────────────────
+var CLIENT_ID = '814441812586-cbmu0spsrmbqbidfg8geotrud77isgdi.apps.googleusercontent.com';
+var REDIRECT_URI = 'https://serene-youtiao-b755f0.netlify.app';
+var TOKEN_KEY = 'liv_at';
+
+function signIn() {
+  var params = [
+    'client_id=' + CLIENT_ID,
+    'redirect_uri=' + encodeURIComponent(REDIRECT_URI),
+    'response_type=token',
+    'scope=' + encodeURIComponent('https://www.googleapis.com/auth/drive'),
+    'prompt=consent'
+  ].join('&');
+  window.location.href = 'https://accounts.google.com/o/oauth2/v2/auth?' + params;
+}
+
+function signOut() {
+  accessToken = null;
+  localStorage.removeItem(TOKEN_KEY);
+  go('s-auth');
+}
+
+function handleOAuthCallback() {
+  var hash = window.location.hash;
+  if (!hash) return false;
+  var params = {};
+  hash.substring(1).split('&').forEach(function(p) {
+    var parts = p.split('=');
+    params[parts[0]] = decodeURIComponent(parts[1]);
+  });
+  if (params.access_token) {
+    accessToken = params.access_token;
+    localStorage.setItem(TOKEN_KEY, accessToken);
+    // Clean URL
+    window.history.replaceState({}, document.title, window.location.pathname);
+    return true;
+  }
+  return false;
+}
+
+// ── DRIVE ─────────────────────────────────────────────────────────────────
+async function driveList(query) {
+  if (accessToken === 'DEMO') return null;
+  var r = await fetch('https://www.googleapis.com/drive/v3/files?q=' + encodeURIComponent(query) + '&fields=files(id,name,mimeType,modifiedTime)&pageSize=50&orderBy=modifiedTime+desc', {headers:{Authorization:'Bearer '+accessToken}});
+  if (r.status === 401) { signOut(); return null; }
+  return r.ok ? r.json() : null;
+}
+async function driveCreateFolder(name, parentId) {
+  if (accessToken === 'DEMO') return {id:'demo-'+Date.now()};
+  var r = await fetch('https://www.googleapis.com/drive/v3/files', {method:'POST', headers:{Authorization:'Bearer '+accessToken,'Content-Type':'application/json'}, body:JSON.stringify({name:name, mimeType:'application/vnd.google-apps.folder', parents:[parentId]})});
+  return r.json();
+}
+async function driveUpload(blob, name, parentId) {
+  if (accessToken === 'DEMO') return {id:'demo-file-'+Date.now()};
+  var meta = JSON.stringify({name:name, parents:[parentId]});
+  var form = new FormData();
+  form.append('metadata', new Blob([meta], {type:'application/json'}));
+  form.append('file', blob);
+  var r = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {method:'POST', headers:{Authorization:'Bearer '+accessToken}, body:form});
+  return r.json();
+}
+async function driveGetOrCreate(name, parentId) {
+  if (accessToken !== 'DEMO') {
+    var res = await driveList("name='" + name + "' and mimeType='application/vnd.google-apps.folder' and '" + parentId + "' in parents and trashed=false");
+    if (res && res.files && res.files.length) return res.files[0];
+  }
+  return driveCreateFolder(name, parentId);
+}
+
+async function driveReadJson(fileId) {
+  if (accessToken === 'DEMO') return null;
+  var r = await fetch('https://www.googleapis.com/drive/v3/files/' + fileId + '?alt=media', {
+    headers: {Authorization: 'Bearer ' + accessToken}
+  });
+  if (!r.ok) return null;
+  return r.json();
+}
+
+async function driveGetFileId(name, parentId) {
+  if (accessToken === 'DEMO') return null;
+  var res = await driveList("name='" + name + "' and '" + parentId + "' in parents and trashed=false");
+  if (res && res.files && res.files.length) return res.files[0].id;
+  return null;
+}
+
+function drivePhotoUrl(fileId) {
+  return 'https://www.googleapis.com/drive/v3/files/' + fileId + '?alt=media&access_token=' + accessToken;
+}
+
+// ── JOBS ──────────────────────────────────────────────────────────────────
+var allJobs = [];
+var RECENT_COUNT = 10;
+
+async function loadJobs() {
+  document.getElementById('job-list').innerHTML = '<div class="loading"><div class="sp"></div><div class="lt">Loading recent jobs…</div></div>';
+  if (accessToken === 'DEMO') {
+    allJobs = DEMO_JOBS;
+    jobs = allJobs;
+    renderJobs(allJobs.slice(0, RECENT_COUNT), allJobs.length);
+    document.getElementById('home-sub').textContent = allJobs.length + ' jobs in Drive';
+    return;
+  }
+  // Load all jobs sorted by most recently modified
+  var allFiles = [];
+  var pageToken = null;
+  do {
+    var url = 'https://www.googleapis.com/drive/v3/files'
+      + '?q=' + encodeURIComponent("'" + PROJECTS_FOLDER_ID + "' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false")
+      + '&fields=nextPageToken,files(id,name,modifiedTime)'
+      + '&pageSize=100'
+      + '&orderBy=modifiedTime+desc';
+    if (pageToken) url += '&pageToken=' + encodeURIComponent(pageToken);
+    var r = await fetch(url, {headers:{Authorization:'Bearer '+accessToken}});
+    if (!r.ok) break;
+    var data = await r.json();
+    if (data.files) allFiles = allFiles.concat(data.files);
+    pageToken = data.nextPageToken || null;
+  } while (pageToken);
+  allJobs = allFiles.map(function(f) { return {id:f.id, name:f.name}; });
+  jobs = allJobs;
+  renderJobs(allJobs.slice(0, RECENT_COUNT), allJobs.length);
+  document.getElementById('home-sub').textContent = allJobs.length + ' jobs in Drive';
+}
+
+function filterJobs(v) {
+  v = v.trim().toLowerCase();
+  if (!v) {
+    renderJobs(allJobs.slice(0, RECENT_COUNT), allJobs.length);
+    return;
+  }
+  var filtered = allJobs.filter(function(j) { return j.name.toLowerCase().includes(v); });
+  renderJobs(filtered, 0);
+}
+
+function renderJobs(list, totalCount) {
+  if (!list.length) { document.getElementById('job-list').innerHTML = '<div class="empty">No jobs found</div>'; return; }
+  var h = '<div class="slbl">Recent jobs</div>';
+  list.forEach(function(j) { h += jobCard(j); });
+  if (totalCount && list.length < totalCount) {
+    h += '<button onclick="showAllJobs()" style="width:100%;margin-top:8px;padding:12px;border-radius:12px;border:0.5px solid var(--bd);background:none;font-size:13px;font-weight:500;color:var(--t2);font-family:inherit;cursor:pointer;">Show all ' + totalCount + ' jobs</button>';
+  }
+  document.getElementById('job-list').innerHTML = h;
+}
+
+function showAllJobs() {
+  renderJobs(allJobs, 0);
+}
+
+function jobCard(j) {
+  return '<div class="jc" onclick="openJob(\'' + j.id + '\',\'' + j.name.replace(/'/g, '&#39;') + '\')">' +
+    '<div class="ji"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#1a5c35" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg></div>' +
+    '<div><div class="jn">' + esc(j.name) + '</div><div class="jm">Tap to open punch list</div></div>' +
+    '<div class="ja">›</div></div>';
+}
+
+
+
+// ── JOB VIEW ──────────────────────────────────────────────────────────────
+function openJob(id, name) {
+  currentJob = {id:id, name:name};
+  items = loadItems(id); // load cache immediately
+  currentRoom = 'All';
+  document.getElementById('job-title').textContent = name;
+  document.getElementById('job-sub').textContent = 'Loading punch list…';
+  document.getElementById('section-job-name').textContent = name;
+  document.getElementById('area-job-name').textContent = name;
+  document.getElementById('sub-title').textContent = name;
+  go('s-job');
+  renderJob();
+  loadItemsFromDrive(id);
+}
+
+async function loadItemsFromDrive(jobId) {
+  if (accessToken === 'DEMO') {
+    document.getElementById('job-sub').textContent = 'Demo mode · Punch list';
+    return;
+  }
+  try {
+    // Find Punch List folder
+    var res = await driveList("name='Punch List' and mimeType='application/vnd.google-apps.folder' and '" + jobId + "' in parents and trashed=false");
+    if (!res || !res.files || !res.files.length) {
+      document.getElementById('job-sub').textContent = 'Google Drive · No punch list yet';
+      return;
+    }
+    var punchFolderId = res.files[0].id;
+    // Find punch-list.json
+    var jsonId = await driveGetFileId('punch-list.json', punchFolderId);
+    if (!jsonId) {
+      document.getElementById('job-sub').textContent = 'Google Drive · Punch list';
+      return;
+    }
+    // Read it
+    var data = await driveReadJson(jsonId);
+    if (!data || !data.items) {
+      document.getElementById('job-sub').textContent = 'Google Drive · Punch list';
+      return;
+    }
+    // Restore photo URLs from Drive
+    data.items.forEach(function(item) {
+      if (item.photoFileId && !item.photoUrl) {
+        item.photoUrl = drivePhotoUrl(item.photoFileId);
+      }
+    });
+    items = data.items;
+    saveItems(); // update local cache
+    document.getElementById('job-sub').textContent = 'Google Drive · Synced';
+    renderJob();
+  } catch(e) {
+    document.getElementById('job-sub').textContent = 'Google Drive · Punch list';
+  }
+}
+
+function renderJob() {
+  document.getElementById('cnt-total').textContent = items.length;
+  document.getElementById('cnt-done').textContent = items.filter(function(i) { return i.done; }).length;
+  var rooms = [];
+  items.forEach(function(i) { if (!rooms.includes(i.room)) rooms.push(i.room); });
+  var tabRooms = ['All'].concat(rooms);
+  document.getElementById('room-tabs').innerHTML = tabRooms.map(function(r) {
+    return '<button class="tab' + (r === currentRoom ? ' active' : '') + '" onclick="setRoom(\'' + r.replace(/'/g, '&#39;') + '\',this)">' + esc(r) + '</button>';
+  }).join('');
+  var html = '';
+  if (!items.length) {
+    html = '<div class="empty">No items yet</div>';
+  } else if (currentRoom === 'All') {
+    // Group by room with bold headers
+    rooms.forEach(function(room) {
+      var roomItems = items.filter(function(i) { return i.room === room; });
+      html += '<div style="font-size:16px;font-weight:600;color:var(--t);margin:20px 0 10px;padding-bottom:6px;border-bottom:1.5px solid var(--bd)">' + esc(room) + '</div>';
+      html += roomItems.map(piHTML).join('');
+    });
+  } else {
+    var filtered = items.filter(function(i) { return i.room === currentRoom; });
+    html = filtered.length ? filtered.map(piHTML).join('') : '<div class="empty">No items in this area</div>';
+  }
+  document.getElementById('punch-list').innerHTML = html;
+}
+
+function piHTML(item) {
+  var thumb = item.photoUrl ? '<img src="' + item.photoUrl + '" alt="">' : (item.emoji || '📷');
+  var status = item.flagged ? '<div class="ps f">⚑ Clarke flagged — not done yet</div>' : (item.done ? '<div class="ps">✓ Marked complete</div>' : '');
+  var check = '<button class="ck' + (item.done ? ' done' : '') + '" onclick="toggleItem(' + item.id + ')">' + (item.done ? '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>' : '') + '</button>';
+  return '<div class="pi' + (item.done ? ' done' : '') + '"><div class="th" onclick="openPhoto(' + item.id + ')">' + thumb + '</div><div class="pb"><div class="pr">' + esc(item.room) + '</div><div class="pn">' + esc(item.note) + '</div>' + status + '</div>' + check + '</div>';
+}
+
+function setRoom(room, el) {
+  currentRoom = room;
+  document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+  el.classList.add('active');
+  renderJob();
+}
+
+function toggleItem(id) {
+  var item = items.find(function(i) { return i.id === id; });
+  if (item) { item.done = !item.done; item.flagged = false; }
+  saveItems(); renderJob();
+  showToast(item.done ? '✓ Marked complete' : 'Item reopened');
+}
+
+function openPhoto(id) {
+  var item = items.find(function(i) { return i.id === id; });
+  var d = document.createElement('div'); d.className = 'mbg';
+  var img = item.photoUrl ? '<img src="' + item.photoUrl + '" alt="">' : '<div class="mo-em">' + (item.emoji || '📷') + '</div>';
+  d.innerHTML = '<div class="mo" onclick="event.stopPropagation()">' + img + '<div class="mo-rm">' + esc(item.room) + '</div><div class="mo-nt">' + esc(item.note) + '</div><div><button class="mf" onclick="flagItem(' + id + ');this.closest(\'.mbg\').remove()">⚑ Flag for redo</button><button class="mx" onclick="this.closest(\'.mbg\').remove()">Close</button></div></div>';
+  d.onclick = function() { d.remove(); };
+  document.body.appendChild(d);
+}
+
+function flagItem(id) {
+  var item = items.find(function(i) { return i.id === id; });
+  if (item) { item.flagged = true; item.done = false; }
+  saveItems(); renderJob();
+  showToast('⚑ Flagged for redo');
+}
+
+// ── SECTION + AREA PICKER ─────────────────────────────────────────────────
+var QUICK_ROOMS = ['Master Bath','Guest Bath','Kitchen','Living Room','Family Room','Dining Room','Hallway','Bedroom','Office','Laundry Room','Basement'];
+
+function pickSection(section) {
+  currentSection = section;
+  var titles = {interior:'Interior', exterior:'Exterior', both:'All areas'};
+  document.getElementById('area-title').textContent = titles[section];
+  renderAreaList();
+  go('s-area');
+}
+
+function renderAreaList() {
+  var areaList = document.getElementById('area-list');
+  var interiorWrap = document.getElementById('interior-input-wrap');
+
+  if (currentSection === 'interior') {
+    areaList.innerHTML = '';
+    interiorWrap.style.display = 'block';
+    document.getElementById('quick-rooms').innerHTML = QUICK_ROOMS.map(function(r) {
+      return '<div class="jc" style="margin-bottom:7px" onclick="selectArea(\'' + r.replace(/'/g,'&#39;') + '\')">' +
+        '<div style="flex:1;font-size:14px;font-weight:500;color:var(--t)">' + esc(r) + '</div>' +
+        '<div class="ja">›</div></div>';
+    }).join('');
+
+  } else if (currentSection === 'exterior') {
+    interiorWrap.style.display = 'none';
+    areaList.innerHTML = EXTERIOR_AREAS.map(function(a) {
+      return '<div class="jc" style="margin-bottom:7px" onclick="selectArea(\'' + a.replace(/'/g,'&#39;') + '\')">' +
+        '<div style="flex:1;font-size:14px;font-weight:500;color:var(--t)">' + esc(a) + '</div>' +
+        '<div class="ja">›</div></div>';
+    }).join('');
+
+  } else {
+    interiorWrap.style.display = 'block';
+    document.getElementById('quick-rooms').innerHTML = QUICK_ROOMS.map(function(r) {
+      return '<div class="jc" style="margin-bottom:7px" onclick="selectArea(\'' + r.replace(/'/g,'&#39;') + '\')">' +
+        '<div style="flex:1;font-size:14px;font-weight:500;color:var(--t)">' + esc(r) + '</div>' +
+        '<div class="ja">›</div></div>';
+    }).join('');
+    areaList.innerHTML = '<div class="slbl" style="margin:20px 0 8px">Exterior</div>' +
+      EXTERIOR_AREAS.map(function(a) {
+        return '<div class="jc" style="margin-bottom:7px" onclick="selectArea(\'' + a.replace(/'/g,'&#39;') + '\')">' +
+          '<div style="flex:1;font-size:14px;font-weight:500;color:var(--t)">' + esc(a) + '</div>' +
+          '<div class="ja">›</div></div>';
+      }).join('');
+  }
+}
+
+function selectArea(area) {
+  selectedArea = area;
+  document.getElementById('area-badge-name').textContent = area;
+  document.getElementById('cap-sub').textContent = (currentJob ? currentJob.name : '') + ' · ' + area;
+  resetCapture();
+  go('s-capture');
+}
+
+function selectCustomArea() {
+  var val = document.getElementById('custom-area-input').value.trim();
+  if (!val) return;
+  document.getElementById('custom-area-input').value = '';
+  selectArea(val);
+}
+
+
+// ── CAPTURE ───────────────────────────────────────────────────────────────
+function handleCaptureClick() { if (!cameraOpen) startCamera(); }
+
+async function startCamera() {
+  try {
+    camStream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}, audio:false});
+    var vid = document.getElementById('cam-vid');
+    vid.srcObject = camStream; vid.style.display = 'block';
+    document.getElementById('cap-overlay').style.display = 'none';
+    document.getElementById('shutter').style.display = 'block';
+    cameraOpen = true;
+  } catch(e) {
+    var inp = document.createElement('input');
+    inp.type = 'file'; inp.accept = 'image/*'; inp.capture = 'environment';
+    inp.onchange = function() {
+      if (!inp.files[0]) return;
+      photoBlob = inp.files[0];
+      var url = URL.createObjectURL(photoBlob);
+      var canvas = document.getElementById('cam-canvas');
+      var img = new Image();
+      img.onload = function() {
+        canvas.width = img.width; canvas.height = img.height;
+        canvas.getContext('2d').drawImage(img, 0, 0);
+        canvas.style.display = 'block';
+        document.getElementById('cap-overlay').style.display = 'none';
+        document.getElementById('cap-zone').classList.add('has');
+        checkReady();
+      };
+      img.src = url;
+    };
+    inp.click();
+  }
+}
+
+function snapPhoto(e) {
+  e.stopPropagation();
+  var vid = document.getElementById('cam-vid');
+  var canvas = document.getElementById('cam-canvas');
+  canvas.width = vid.videoWidth; canvas.height = vid.videoHeight;
+  canvas.getContext('2d').drawImage(vid, 0, 0);
+  canvas.style.display = 'block'; vid.style.display = 'none';
+  document.getElementById('shutter').style.display = 'none';
+  canvas.toBlob(function(b) { photoBlob = b; }, 'image/jpeg', 0.85);
+  document.getElementById('cap-zone').classList.add('has');
+  if (camStream) { camStream.getTracks().forEach(function(t) { t.stop(); }); camStream = null; }
+  cameraOpen = false;
+  checkReady();
+  showToast('📷 Photo captured');
+}
+
+function stopCam() {
+  if (camStream) { camStream.getTracks().forEach(function(t) { t.stop(); }); camStream = null; }
+  document.getElementById('cam-vid').style.display = 'none';
+  document.getElementById('cam-canvas').style.display = 'none';
+  document.getElementById('cap-overlay').style.display = 'flex';
+  document.getElementById('shutter').style.display = 'none';
+  document.getElementById('cap-zone').classList.remove('has');
+  cameraOpen = false;
+}
+
+function toggleMic() {
+  if (isRecording) { if (recognition) recognition.stop(); return; }
+  var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (SR) {
+    recognition = new SR();
+    recognition.continuous = false; recognition.interimResults = true; recognition.lang = 'en-US';
+    recognition.onstart = function() {
+      isRecording = true;
+      document.getElementById('mic-btn').classList.add('rec');
+      document.getElementById('voice-txt').textContent = 'Listening…';
+      document.getElementById('voice-txt').classList.remove('on');
+    };
+    recognition.onresult = function(e) {
+      var t = Array.from(e.results).map(function(r) { return r[0].transcript; }).join('');
+      document.getElementById('voice-txt').textContent = t;
+    };
+    recognition.onend = function() {
+      isRecording = false;
+      document.getElementById('mic-btn').classList.remove('rec');
+      voiceText = document.getElementById('voice-txt').textContent;
+      if (voiceText && voiceText !== 'Listening…') {
+        document.getElementById('voice-txt').classList.add('on');
+        checkReady();
+      }
+    };
+    recognition.onerror = function() {
+      isRecording = false;
+      document.getElementById('mic-btn').classList.remove('rec');
+      document.getElementById('voice-txt').textContent = 'Could not hear — try again';
+    };
+    recognition.start();
+  } else {
+    var note = prompt('Type your punch list note:');
+    if (note) {
+      voiceText = note;
+      document.getElementById('voice-txt').textContent = note;
+      document.getElementById('voice-txt').classList.add('on');
+      checkReady();
+    }
+  }
+}
+
+function checkReady() {
+  var btn = document.getElementById('save-btn');
+  var ok = photoBlob && voiceText && selectedArea;
+  btn.disabled = !ok;
+  btn.textContent = ok ? 'Save to Drive → ' + selectedArea : 'Save to Google Drive';
+}
+
+async function saveItem() {
+  var btn = document.getElementById('save-btn');
+  var st  = document.getElementById('save-status');
+  btn.disabled = true; btn.textContent = 'Saving…'; st.textContent = 'Creating punch list folder…';
+  try {
+    var pFolder = await driveGetOrCreate(PUNCH_FOLDER_NAME, currentJob.id);
+    st.textContent = 'Uploading photo…';
+    var ts = Date.now();
+    var photoFile = await driveUpload(photoBlob, 'punch-' + ts + '.jpg', pFolder.id);
+    var newItem = {id:ts, room:selectedArea, note:voiceText, done:false, flagged:false, photoFileId:photoFile.id, photoUrl:URL.createObjectURL(photoBlob), emoji:null};
+    items.push(newItem); saveItems();
+    st.textContent = 'Saving manifest…';
+    var manifest = JSON.stringify({jobId:currentJob.id, jobName:currentJob.name, items:items.map(function(i) { return Object.assign({}, i, {photoUrl:null}); })});
+    await driveUpload(new Blob([manifest], {type:'application/json'}), 'punch-list.json', pFolder.id);
+    showToast('✓ Saved to Google Drive');
+    st.textContent = '';
+    resetCapture();
+    go('s-job');
+    renderJob();
+  } catch(err) {
+    btn.disabled = false; btn.textContent = 'Save to Google Drive';
+    st.textContent = 'Error — please try again';
+  }
+}
+
+function cancelCapture() { stopCam(); go('s-job'); }
+
+function resetCapture() {
+  stopCam();
+  photoBlob = null; voiceText = '';
+  document.getElementById('voice-txt').textContent = 'Tap mic to record voice note';
+  document.getElementById('voice-txt').classList.remove('on');
+  document.getElementById('mic-btn').classList.remove('rec');
+  document.getElementById('save-btn').disabled = true;
+  document.getElementById('save-btn').textContent = 'Save to Google Drive';
+  document.getElementById('save-status').textContent = '';
+}
+
+// ── SUB VIEW ──────────────────────────────────────────────────────────────
+function renderSub() {
+  var rooms = [];
+  items.forEach(function(i) { if (!rooms.includes(i.room)) rooms.push(i.room); });
+  if (!items.length) { document.getElementById('sub-list').innerHTML = '<div class="empty">No punch items yet</div>'; return; }
+  var html = '';
+  rooms.forEach(function(room) {
+    html += '<div class="slbl" style="margin:16px 0 8px">' + esc(room) + '</div>';
+    items.filter(function(i) { return i.room === room; }).forEach(function(item) {
+      var thumb = item.photoUrl ? '<img src="' + item.photoUrl + '" alt="">' : (item.emoji || '📷');
+      var status = item.flagged ? '<div class="ps f">⚑ Clarke flagged — please redo</div>' : (item.done ? '<div class="ps">✓ Complete</div>' : '');
+      var check = '<button class="ck' + (item.done ? ' done' : '') + '" onclick="subToggle(' + item.id + ')">' + (item.done ? '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>' : '') + '</button>';
+      html += '<div class="pi' + (item.done ? ' done' : '') + '"><div class="th" onclick="subPhoto(' + item.id + ')">' + thumb + '</div><div class="pb"><div class="pn">' + esc(item.note) + '</div>' + status + '</div>' + check + '</div>';
+    });
+  });
+  document.getElementById('sub-list').innerHTML = html;
+}
+
+function subToggle(id) {
+  var item = items.find(function(i) { return i.id === id; });
+  if (item) item.done = !item.done;
+  saveItems(); renderSub();
+  showToast(item.done ? '✓ Marked complete' : 'Item reopened');
+}
+
+function subPhoto(id) {
+  var item = items.find(function(i) { return i.id === id; });
+  var d = document.createElement('div'); d.className = 'mbg';
+  var img = item.photoUrl ? '<img src="' + item.photoUrl + '" alt="">' : '<div class="mo-em">' + (item.emoji || '📷') + '</div>';
+  d.innerHTML = '<div class="mo" onclick="event.stopPropagation()">' + img + '<div class="mo-nt">' + esc(item.note) + '</div><button class="mx" style="margin-top:14px" onclick="this.closest(\'.mbg\').remove()">Close</button></div>';
+  d.onclick = function() { d.remove(); };
+  document.body.appendChild(d);
+}
+
+// ── SHARE ─────────────────────────────────────────────────────────────────
+function copyLink() {
+  var link = window.location.href.split('?')[0] + '?job=' + encodeURIComponent(currentJob.id) + '&name=' + encodeURIComponent(currentJob.name);
+  if (navigator.clipboard) { navigator.clipboard.writeText(link).then(function() { showToast('Link copied!'); }); }
+  else { showToast('Copy: ' + link); }
+}
+
+// ── STORAGE ───────────────────────────────────────────────────────────────
+function saveItems() { try { localStorage.setItem('punch_' + currentJob.id, JSON.stringify(items)); } catch(e) {} }
+function loadItems(id) { try { var s = localStorage.getItem('punch_' + id); return s ? JSON.parse(s) : []; } catch(e) { return []; } }
+
+// ── NAV ───────────────────────────────────────────────────────────────────
+function go(id) {
+  document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('active'); });
+  document.getElementById(id).classList.add('active');
+  if (id === 's-sub') renderSub();
+  if (id === 's-area') renderAreaList();
+}
+
+// ── UTILS ─────────────────────────────────────────────────────────────────
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function showToast(msg) { var t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(function() { t.classList.remove('show'); }, 2200); }
+
+// ── INIT ──────────────────────────────────────────────────────────────────
+window.addEventListener('load', function() {
+  // Check for OAuth callback first
+  if (handleOAuthCallback()) {
+    go('s-home');
+    loadJobs();
+    return;
+  }
+  var t = localStorage.getItem('liv_at');
+  if (t) { accessToken = t; go('s-home'); loadJobs(); }
+});
+</script>
+</body>
+</html>
